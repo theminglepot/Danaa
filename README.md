@@ -1,2 +1,1255 @@
 # Danaa
 Dana's
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dana Scott — The Library (Live Preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#2B1F52; --bg-panel:#4A2E73;
+    --paper:#F7EFE4; --paper-line:#E4D7C4;
+    --ink:#2B2420; --ink-soft:#5A4C46;
+    --cream-text:#EFEAF6; --cream-muted:#B7AEC9;
+    --gold:#E8B93A; --gold-soft:#F5CC4D; --blue:#4C7FE0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background: radial-gradient(120% 140% at 50% -10%, #5A3585 0%, var(--bg-deep) 55%, #1E1440 100%);
+    font-family:'Lora', serif; color:var(--cream-text); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; padding:28px 16px 70px;
+  }
+  .view{ display:none; width:100%; max-width:1040px; }
+  .view.active{ display:block; }
+
+  .topbar{ width:100%; display:flex; justify-content:space-between; align-items:center; padding:6px 4px 26px; font-family:'Manrope', sans-serif; }
+  .brand{ font-family:'Fraunces', serif; font-weight:500; font-size:1.05rem; color:var(--gold-soft); text-decoration:none; background:none; border:none; cursor:pointer; padding:0; }
+  .brand span{ color:var(--cream-muted); font-weight:400; font-size:0.85em; }
+  .nav-btn{
+    background:none; border:1px solid rgba(232,185,58,0.4); color:var(--cream-text);
+    font-family:'Manrope', sans-serif; font-size:0.8rem; padding:9px 16px; border-radius:100px; cursor:pointer;
+  }
+  .nav-btn:hover{ border-color:var(--gold); background:rgba(232,185,58,0.08); }
+
+  /* HOME */
+  header{ text-align:center; margin-bottom:44px; }
+  .eyebrow{ font-family:'Manrope', sans-serif; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--blue); margin-bottom:14px; }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-style:italic; font-size:2.2rem; margin:0 0 12px; color:var(--gold-soft); }
+  header p{ color:var(--cream-muted); max-width:480px; margin:0 auto; font-size:0.96rem; line-height:1.6; }
+
+  .shelf-section{ margin-bottom:44px; }
+  .section-label{ font-family:'Manrope', sans-serif; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--cream-muted); margin-bottom:16px; padding-left:2px; }
+  .shelf{ display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:24px; }
+  .book-card{ background:var(--bg-panel); border:1px solid rgba(232,185,58,0.14); border-radius:16px; overflow:hidden; text-decoration:none; color:inherit; display:flex; flex-direction:column; cursor:pointer; transition:border-color .2s, transform .2s; }
+  .book-card:hover{ border-color:rgba(232,185,58,0.4); transform:translateY(-3px); }
+  .book-card.disabled{ opacity:0.55; cursor:default; pointer-events:none; }
+  .cover{ height:140px; display:flex; align-items:flex-end; padding:18px; position:relative; }
+  .cover.grief{ background: linear-gradient(160deg,#4A3A44,#6B4A52 60%,#4C7FE0 130%); }
+  .cover.permission{ background: linear-gradient(160deg,#3A3E44,#4A5E5A 60%,#E8B93A 130%); }
+  .cover.mental{ background: linear-gradient(160deg,#3A3550,#5A3585 60%,#7BA8D6 130%); }
+  .cover.relgrief{ background: linear-gradient(160deg,#4A2E4A,#6B4A6B 60%,#E8B93A 130%); }
+  .cover.famgrief{ background: linear-gradient(160deg,#2E3A4A,#4A5E6B 60%,#4C7FE0 130%); }
+  .cover-title{ font-family:'Fraunces', serif; font-style:italic; font-weight:500; font-size:1.1rem; color:#fff; }
+  .soon-tag{ position:absolute; top:12px; right:12px; font-family:'Manrope', sans-serif; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--cream-muted); border:1px solid rgba(239,234,246,0.25); padding:3px 8px; border-radius:100px; }
+  .card-body{ padding:16px 18px 20px; }
+  .card-meta{ font-family:'Manrope', sans-serif; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--cream-muted); margin-bottom:8px; }
+  .card-desc{ font-size:0.88rem; color:var(--cream-text); line-height:1.5; margin:0 0 12px; }
+  .progress-row{ display:flex; justify-content:space-between; font-family:'Manrope', sans-serif; font-size:0.74rem; color:var(--gold-soft); }
+  .track{ height:3px; background:rgba(255,255,255,0.1); border-radius:3px; margin-top:8px; }
+  .fill{ height:100%; border-radius:3px; background:linear-gradient(90deg, var(--blue), var(--gold-soft)); }
+  .reset-link{ margin-top:8px; font-family:'Manrope', sans-serif; font-size:0.68rem; color:var(--cream-muted); text-decoration:underline; cursor:pointer; display:inline-block; }
+
+  .journal-card{ background:var(--bg-panel); border:1px solid rgba(232,185,58,0.14); border-radius:14px; padding:18px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:border-color .2s, transform .2s; }
+  .journal-card:hover{ border-color:rgba(232,185,58,0.4); transform:translateY(-2px); }
+  .journal-card.disabled{ opacity:0.5; pointer-events:none; }
+  .journal-icon{ width:38px; height:38px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background: linear-gradient(160deg, #4C7FE0, #4A2E73 65%, #E8B93A 130%); }
+  .journal-icon svg{ width:16px; height:16px; }
+  .jtitle{ font-family:'Fraunces', serif; font-style:italic; font-size:0.95rem; margin-bottom:2px; }
+  .jmeta{ font-family:'Manrope', sans-serif; font-size:0.68rem; color:var(--cream-muted); }
+
+  /* BOOK */
+  .journey{ margin-bottom:22px; }
+  .journey-label{ display:flex; justify-content:space-between; font-family:'Manrope', sans-serif; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--cream-muted); margin-bottom:8px; }
+  .journey-track{ height:3px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
+  .journey-fill{ height:100%; background:linear-gradient(90deg, var(--blue), var(--gold-soft)); border-radius:3px; }
+  .book-spread{ display:grid; grid-template-columns:1fr 1fr; background:var(--paper); border-radius:14px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.55); overflow:hidden; min-height:520px; }
+  .page{ padding:44px 40px; color:var(--ink); display:flex; flex-direction:column; }
+  .page.left{ border-right:1px solid var(--paper-line); }
+  .day-tag{ font-family:'Manrope', sans-serif; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--blue); margin-bottom:14px; }
+  .page h2{ font-family:'Fraunces', serif; font-weight:500; font-style:italic; font-size:1.7rem; line-height:1.15; margin:0 0 18px; }
+  .page p{ font-size:0.96rem; line-height:1.7; color:var(--ink-soft); margin:0 0 14px; }
+  .anchor-line{ margin-top:auto; padding-top:18px; border-top:1px solid var(--paper-line); font-family:'Fraunces', serif; font-style:italic; font-size:0.92rem; }
+  .page.right{ background:#FBF5EC; }
+  .journal-head{ font-family:'Manrope', sans-serif; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:10px; }
+  .prompt{ font-family:'Fraunces', serif; font-weight:500; font-size:1.1rem; line-height:1.4; margin:0 0 18px; }
+  .ruled{ flex:1; background-image:repeating-linear-gradient(to bottom, transparent, transparent 32px, var(--paper-line) 33px); min-height:180px; }
+  .ruled textarea{ width:100%; height:100%; min-height:180px; border:none; background:transparent; resize:none; font-family:'Lora', serif; font-size:0.96rem; line-height:33px; color:var(--ink); }
+  .controls{ display:flex; justify-content:space-between; align-items:center; margin-top:20px; font-family:'Manrope', sans-serif; }
+  .flip-btn{ background:none; border:none; color:var(--cream-text); font-size:0.85rem; cursor:pointer; padding:8px; }
+  .flip-btn:disabled{ color:rgba(239,234,246,0.25); cursor:default; }
+  .flip-btn:not(:disabled):hover{ color:var(--gold-soft); }
+  .page-count{ color:var(--cream-muted); font-size:0.78rem; }
+
+  /* ASSESSMENT */
+  .assess-panel{ max-width:640px; margin:0 auto; background:var(--paper); border-radius:16px; padding:40px 36px; color:var(--ink); }
+  .a-track{ height:3px; background:var(--paper-line); border-radius:3px; margin-bottom:28px; overflow:hidden; }
+  .a-fill{ height:100%; background:linear-gradient(90deg, var(--blue), var(--gold)); }
+  .a-cat{ font-family:'Manrope', sans-serif; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--blue); margin-bottom:10px; }
+  .a-q{ font-family:'Fraunces', serif; font-style:italic; font-weight:500; font-size:1.25rem; margin:0 0 26px; }
+  .a-scale{ display:flex; gap:8px; margin-bottom:8px; }
+  .a-scale button{ flex:1; padding:12px 4px; border-radius:10px; border:1px solid var(--paper-line); background:#FBF5EC; font-family:'Manrope', sans-serif; cursor:pointer; }
+  .a-scale button.sel{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .a-nav{ display:flex; justify-content:space-between; margin-top:24px; }
+  .a-primary{ background:var(--ink); color:var(--paper); border:none; padding:11px 22px; border-radius:100px; font-family:'Manrope', sans-serif; cursor:pointer; }
+
+  /* CHECKIN */
+  .ci-panel{ max-width:600px; margin:0 auto; background:var(--paper); border-radius:16px; padding:36px; color:var(--ink); margin-bottom:30px; }
+  .mood-row{ display:flex; gap:8px; margin-bottom:20px; }
+  .mood-btn{ flex:1; padding:12px 2px; border-radius:10px; border:1px solid var(--paper-line); background:#FBF5EC; font-size:1.3rem; cursor:pointer; text-align:center; }
+  .mood-btn.sel{ background:var(--ink); }
+  .ci-grid{ display:grid; grid-template-columns:repeat(10,1fr); gap:6px; max-width:600px; margin:0 auto; }
+  .ci-cell{ aspect-ratio:1; border-radius:6px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-family:'Manrope', sans-serif; font-size:0.62rem; color:var(--cream-muted); }
+
+  @media (max-width:720px){ .book-spread{ grid-template-columns:1fr; } .page.left{ border-right:none; border-bottom:1px solid var(--paper-line); } }
+</style>
+</head>
+<body>
+
+<div class="view active" id="view-home">
+  <div class="topbar"><button class="brand" onclick="showView('home')">Dana Scott <span>· the library</span></button><button class="nav-btn" onclick="showView('checkin')">◐ Daily Check-In</button></div>
+  <header><div class="eyebrow">Dana Scott</div><h1>The Library</h1><p>Choose the book that meets you where you are. Each one comes with its own journal — saved right here.</p></header>
+  <div class="shelf-section"><div class="section-label">Books</div><div class="shelf" id="bookShelf"></div></div>
+  <div class="shelf-section"><div class="section-label">Journals</div><div class="shelf" id="journalShelf" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));"></div></div>
+</div>
+
+<div class="view" id="view-book">
+  <div class="topbar"><button class="brand" onclick="showView('home')">Dana Scott <span>· the library</span></button><button class="nav-btn" onclick="showView('home')">⟡ Switch book</button></div>
+  <div class="journey"><div class="journey-label"><span id="bookTitle"></span><span id="dayLabel"></span></div><div class="journey-track"><div class="journey-fill" id="journeyFill"></div></div></div>
+  <div class="book-spread">
+    <div class="page left"><div class="day-tag" id="dayTag"></div><h2 id="entryTitle"></h2><p id="entryBody1"></p><p id="entryBody2"></p><div class="anchor-line" id="anchorLine"></div></div>
+    <div class="page right"><div class="journal-head">Today's journal</div><div class="prompt" id="prompt"></div><div class="ruled"><textarea id="journalText" placeholder="Begin writing here..."></textarea></div></div>
+  </div>
+  <div class="controls"><button class="flip-btn" id="prevBtn">‹ Previous day</button><span class="page-count" id="pageCount"></span><button class="flip-btn" id="nextBtn">Next day ›</button></div>
+</div>
+
+<div class="view" id="view-assessment">
+  <div class="topbar"><button class="brand" onclick="showView('home')">Dana Scott <span>· the library</span></button></div>
+  <div class="assess-panel">
+    <div id="a-quiz">
+      <div style="font-family:'Manrope',sans-serif;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-bottom:8px;" id="a-progress"></div>
+      <div class="a-track"><div class="a-fill" id="a-fillbar"></div></div>
+      <div class="a-cat" id="a-cat"></div>
+      <div class="a-q" id="a-q"></div>
+      <div class="a-scale" id="a-scale"></div>
+      <div class="a-nav"><button class="flip-btn" style="color:var(--ink-soft);" id="a-back">‹ Back</button><button class="a-primary" id="a-next" disabled>Next</button></div>
+    </div>
+    <div id="a-result" style="display:none;">
+      <div class="a-cat">Your starting point</div>
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:1.5rem;margin:0 0 14px;" id="a-band"></div>
+      <p style="color:var(--ink-soft);line-height:1.7;" id="a-body"></p>
+      <p style="color:var(--ink-soft);line-height:1.7;" id="a-detail"></p>
+      <button class="a-primary" id="a-begin" style="margin-top:14px;">Begin reading →</button>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="view-checkin">
+  <div class="topbar"><button class="brand" onclick="showView('home')">Dana Scott <span>· the library</span></button></div>
+  <h1 style="text-align:center;">Daily Check-In</h1>
+  <p style="text-align:center;color:var(--cream-muted);max-width:480px;margin:0 auto 30px;">Thirty days, one honest moment each day.</p>
+  <div class="ci-panel">
+    <div style="font-family:'Manrope',sans-serif;font-size:0.72rem;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;" id="ciDay"></div>
+    <div style="font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:1.15rem;margin:0 0 18px;">How are you feeling today?</div>
+    <div class="mood-row" id="moodRow"></div>
+    <textarea id="ciNote" placeholder="Anything to add? (optional)" style="width:100%;min-height:70px;border:1px solid var(--paper-line);border-radius:10px;background:#FBF5EC;font-family:'Lora',serif;padding:12px;margin-bottom:16px;"></textarea>
+    <button class="a-primary" style="width:100%;" id="ciSave">Save today's check-in</button>
+  </div>
+  <div class="ci-grid" id="ciGrid"></div>
+</div>
+
+<script>
+const LIBRARY = {
+    grief: {
+      title: "Grief To Grace",
+      totalDays: 30,
+      entries: [
+        {
+          day: 1, tag: "Day One", title: "The Weight You're Allowed to Set Down",
+          body1: "No one hands you a manual for this. You are learning, day by day, how to carry something that has no proper shape — and some days it will feel lighter, and some days it will feel like the first day again. Both are part of the same honest process.",
+          body2: "Grief is not a problem to be solved. It is love that has nowhere left to go, looking for a new place to live. Today is not about finding closure. It's about finding one small, steady place to set your feet.",
+          anchor: "\u201cMay every life be honored — including the life you are living now, in the middle of missing them.\u201d",
+          prompt: "What is one thing you are carrying today that you haven't said out loud yet?"
+        },
+        {
+          day: 2, tag: "Day Two", title: "You Don't Have to Be Ready",
+          body1: "Somewhere along the way, we picked up the idea that healing means being ready — ready to talk about it, ready to move forward, ready to feel okay. Readiness is not a requirement for progress.",
+          body2: "You are allowed to take the next small step while still feeling entirely unready for all the ones after it. That is not weakness. That is how anyone has ever survived anything.",
+          anchor: "\u201cYou are not behind. There is no schedule for this.\u201d",
+          prompt: "Where in your life are you waiting to feel 'ready' before you allow yourself to move?"
+        },
+        {
+          day: 3, tag: "Day Three", title: "Let the Memory Be Soft",
+          body1: "Some memories will still ambush you — a song, a smell, a certain slant of light in the afternoon. You don't have to brace against these. You're allowed to let them land softly instead of flinching.",
+          body2: "A memory that catches you off guard is not a setback. It's proof that what you had was real enough to still be here.",
+          anchor: "\u201cLove doesn't need permission to visit.\u201d",
+          prompt: "Describe a memory that visited you recently. What did it bring with it?"
+        },
+        {
+          day: 4, tag: "Day Four", title: "Anger Is Not the Opposite of Love",
+          body1: "If anger has shown up in your grief, you may have been taught to feel ashamed of it. But anger is often just love that has nowhere to go, wearing a harder face.",
+          body2: "You're allowed to be angry — at the illness, the accident, the unfairness, even at the person you lost. That doesn't cancel out how much you loved them.",
+          anchor: "\u201cAnger is grief standing guard.\u201d",
+          prompt: "Is there anger underneath your sadness right now? What is it protecting?"
+        },
+        {
+          day: 5, tag: "Day Five", title: "The Guilt That Doesn't Belong to You",
+          body1: "'I should have called more.' 'I should have known.' Grief loves to hand you a list of things you got wrong, as if loving someone perfectly was ever the assignment.",
+          body2: "You did the best you could with what you knew at the time. That sentence is allowed to be true even when it doesn't feel like enough.",
+          anchor: "\u201cHindsight is not evidence of failure.\u201d",
+          prompt: "What guilt have you been carrying that, if a friend told you the same story, you would tell them to release?"
+        },
+        {
+          day: 6, tag: "Day Six", title: "When Your Body Grieves Too",
+          body1: "Grief isn't only emotional. It shows up as exhaustion, a tight chest, forgetfulness, appetite that disappears or won't quit. Your body is processing loss right alongside your heart.",
+          body2: "Rest is not indulgent right now. It's part of the work, even when it doesn't feel productive.",
+          anchor: "\u201cYour body is allowed to grieve at its own pace too.\u201d",
+          prompt: "How has your body been telling you it's tired, even if your mind keeps pushing forward?"
+        },
+        {
+          day: 7, tag: "Day Seven", title: "One Week In",
+          body1: "A week ago you didn't know exactly what today would feel like. Maybe it's harder than you expected. Maybe there's been one moment of unexpected okay. Both can be true in the same week.",
+          body2: "You don't need this week to prove anything about how well you're healing. You only needed to get through it, and you did.",
+          anchor: "\u201cSurviving the week is not a small thing.\u201d",
+          prompt: "Looking back on this week, what got you through the hardest moment in it?"
+        },
+        {
+          day: 8, tag: "Day Eight", title: "When People Don't Know What to Say",
+          body1: "Some people will disappear because grief makes them uncomfortable. Some will say the wrong thing trying to say the right one. Neither is a measure of how much you deserved support.",
+          body2: "You get to decide who has room in this season of your life — including giving yourself permission to lean less on people who can't meet you here.",
+          anchor: "\u201cTheir discomfort is not your responsibility to manage.\u201d",
+          prompt: "Who has actually shown up for you the way you needed? Have you let them know?"
+        },
+        {
+          day: 9, tag: "Day Nine", title: "Grief Doesn't Move in a Straight Line",
+          body1: "You might feel okay on a Tuesday and shattered on a Wednesday for no clear reason. That's not regression. Grief moves in waves, not stairs.",
+          body2: "You are not going backward when a hard day follows a good one. You're simply still in it, which is exactly where you're supposed to be right now.",
+          anchor: "\u201cA hard day is not proof you've made no progress.\u201d",
+          prompt: "What did a recent 'wave' of grief teach you about what you still need?"
+        },
+        {
+          day: 10, tag: "Day Ten", title: "Say Their Name",
+          body1: "People often go quiet around the name of someone who died, worried it will cause pain. But usually, hearing their name spoken is a relief — proof they haven't been erased.",
+          body2: "You're allowed to bring them up in conversation. You're allowed to want to talk about them, even on an ordinary Tuesday.",
+          anchor: "\u201cSpeaking their name keeps them present, not painful.\u201d",
+          prompt: "What's a story about them you wish more people would ask you to tell?"
+        },
+        {
+          day: 11, tag: "Day Eleven", title: "The Comparison Trap",
+          body1: "It's easy to measure your grief against someone else's — theirs looks quieter, or louder, or shorter, or longer. But there is no correct amount of grieving for the person you lost.",
+          body2: "Your grief is shaped by your specific relationship, your specific history, your specific loss. It doesn't need to look like anyone else's to be valid.",
+          anchor: "\u201cThis is not a competition you can lose.\u201d",
+          prompt: "Have you been comparing your grief to someone else's? What would it feel like to release that measuring stick?"
+        },
+        {
+          day: 12, tag: "Day Twelve", title: "Laughing Doesn't Mean You've Forgotten",
+          body1: "The first real laugh after a loss can feel like a betrayal. It isn't. Joy returning is not the same as grief leaving — the two can exist in the same room.",
+          body2: "You are allowed to laugh, to enjoy a meal, to feel a flicker of lightness, without it erasing how much they mattered.",
+          anchor: "\u201cJoy is not disloyalty.\u201d",
+          prompt: "When was the last time you felt a small moment of lightness? Did you let yourself have it, or did guilt cut it short?"
+        },
+        {
+          day: 13, tag: "Day Thirteen", title: "The Empty Chair",
+          body1: "Certain spaces will always feel like they have a shape missing from them — a chair, a side of the bed, a seat at the table. You don't have to explain that absence to anyone who hasn't lived it.",
+          body2: "Noticing the empty space isn't a sign you're stuck. It's a sign of how present they still are to you.",
+          anchor: "\u201cThe space they left is proof of the space they filled.\u201d",
+          prompt: "Where do you feel their absence most in your daily routine?"
+        },
+        {
+          day: 14, tag: "Day Fourteen", title: "Two Weeks: Letting Go of 'Should'",
+          body1: "By now, some people expect you to be 'doing better.' You don't owe anyone a timeline. There is no should in grief — only what's actually true for you today.",
+          body2: "Let go of the version of this process you think you're supposed to be having, and just have the one you're actually in.",
+          anchor: "\u201cThere is no correct pace for this.\u201d",
+          prompt: "What expectation — yours or someone else's — are you ready to release today?"
+        },
+        {
+          day: 15, tag: "Day Fifteen", title: "Halfway, and Still Here",
+          body1: "Fifteen days of showing up for this — even the days it felt like nothing was happening — is not nothing. You have been doing quiet, real work.",
+          body2: "You don't need a breakthrough today to be making progress. Staying present is the progress.",
+          anchor: "\u201cShowing up quietly still counts.\u201d",
+          prompt: "What's one way, however small, that you've been gentler with yourself since Day One?"
+        },
+        {
+          day: 16, tag: "Day Sixteen", title: "When Others Move On Faster",
+          body1: "It can sting when the world seems to have absorbed the loss faster than you have — calendars fill back up, conversations move on. That doesn't mean your loss matters less to you.",
+          body2: "You're allowed to still be in the middle of this, even when everyone else has quietly returned to normal life.",
+          anchor: "\u201cThe world moving on does not require you to.\u201d",
+          prompt: "Where have you felt pressure to 'catch up' to everyone else's pace? What would it feel like to ignore that pressure?"
+        },
+        {
+          day: 17, tag: "Day Seventeen", title: "Small Rituals", 
+          body1: "Lighting a candle, visiting a place, keeping an object close — small rituals give grief somewhere to go. They don't need to make logical sense to anyone but you.",
+          body2: "If you don't have a ritual yet, you're allowed to invent one. It can be as small as saying good morning to their photo.",
+          anchor: "\u201cRitual is love with a routine.\u201d",
+          prompt: "Is there a small ritual that already helps you feel connected to them — or one you'd like to start?"
+        },
+        {
+          day: 18, tag: "Day Eighteen", title: "Asking for Help Is Not Weakness",
+          body1: "Somewhere along the way, needing support got labeled as failure. It isn't. Every person who has survived something hard did it with someone else's help, even quietly.",
+          body2: "You're allowed to ask — for company, for practical help, for someone to just sit with you without fixing anything.",
+          anchor: "\u201cYou were never meant to carry this alone.\u201d",
+          prompt: "What's one specific thing you could ask for help with this week?"
+        },
+        {
+          day: 19, tag: "Day Nineteen", title: "The Weight of Firsts",
+          body1: "The first birthday, first holiday, first ordinary Tuesday without them — 'firsts' carry extra weight because they confirm the loss all over again.",
+          body2: "You don't have to make it through a 'first' gracefully. You just have to make it through.",
+          anchor: "\u201cEach first is its own small mountain — and you're allowed to just get over it, not conquer it.\u201d",
+          prompt: "Is there a 'first' coming up that you're bracing for? What would make it feel even slightly more bearable?"
+        },
+        {
+          day: 20, tag: "Day Twenty", title: "Dreams and Visitations",
+          body1: "Many people say the person they lost visits them in dreams — vivid, comforting, sometimes disorienting when they wake. Whatever these dreams mean to you, they don't need to be explained away.",
+          body2: "If you haven't dreamed of them yet, that doesn't mean anything either. There's no required way for this to unfold.",
+          anchor: "\u201cHowever they come to you, let it be enough.\u201d",
+          prompt: "Have you had a dream, memory, or moment that felt like a visit? What did it leave you with?"
+        },
+        {
+          day: 21, tag: "Day Twenty-One", title: "Three Weeks: What's Changed",
+          body1: "Three weeks ago, this book was a stranger to you. Today, some of these ideas may already feel familiar — proof that something in you has been quietly shifting.",
+          body2: "You don't have to feel 'healed' to notice you're not exactly where you started.",
+          anchor: "\u201cSmall shifts are still real shifts.\u201d",
+          prompt: "What's different about how you're carrying this today compared to three weeks ago?"
+        },
+        {
+          day: 22, tag: "Day Twenty-Two", title: "Forgiving What Was Left Unsaid",
+          body1: "Almost no one gets to say everything they wanted to say. If there are unfinished conversations sitting heavy in you, you're not alone in that, and it's not too late to say them — just differently now.",
+          body2: "You can still speak to them. Out loud, in writing, in your own quiet way. Love doesn't require a living audience to be real.",
+          anchor: "\u201cSome conversations continue long after the room goes quiet.\u201d",
+          prompt: "Is there something you wish you'd said to them? Write it here, as if they could still hear it."
+        },
+        {
+          day: 23, tag: "Day Twenty-Three", title: "The Legacy They Left in You",
+          body1: "Grief can make it feel like the person is only gone. But so much of who they were is still here — in how you laugh, what you value, the habits you picked up from them without noticing.",
+          body2: "Carrying them forward isn't about never grieving. It's about noticing the ways they already live on in you.",
+          anchor: "\u201cThey didn't just leave. Some of them stayed, in you.\u201d",
+          prompt: "What's one trait, phrase, or habit of theirs that you now recognize in yourself?"
+        },
+        {
+          day: 24, tag: "Day Twenty-Four", title: "Grace for the People Around You",
+          body1: "The people around you are also figuring out how to support someone in grief, often clumsily. This isn't an excuse for real hurt, but some of it comes from not knowing, not from not caring.",
+          body2: "You get to set boundaries and still hold grace for people who are simply out of their depth.",
+          anchor: "\u201cNot knowing how to help is different from not wanting to.\u201d",
+          prompt: "Is there someone you could extend a little more grace to today, even while still protecting your own needs?"
+        },
+        {
+          day: 25, tag: "Day Twenty-Five", title: "Gratitude Without Erasing the Loss",
+          body1: "It can feel impossible to hold gratitude and grief in the same hand. But you can be thankful for what you had and devastated it's gone, in the very same breath.",
+          body2: "Gratitude here isn't about silver linings. It's about honoring what was real and good, without needing it to make the loss hurt less.",
+          anchor: "\u201cGratitude does not require the pain to be gone first.\u201d",
+          prompt: "What's one thing about them or your time together you feel genuinely grateful for, even now?"
+        },
+        {
+          day: 26, tag: "Day Twenty-Six", title: "Building a New Normal",
+          body1: "At some point, quietly, a new version of ordinary life starts forming — different from before, not better or worse, just different. Noticing this isn't a betrayal of what was.",
+          body2: "You're not building a life that replaces them. You're building a life that carries them differently than it did on Day One.",
+          anchor: "\u201cNew does not mean disloyal.\u201d",
+          prompt: "What does your 'new normal' look like right now, even in a small, imperfect way?"
+        },
+        {
+          day: 27, tag: "Day Twenty-Seven", title: "Self-Compassion on the Hard Days",
+          body1: "On the days grief hits hardest, the instinct is often to criticize yourself for still struggling. Try, instead, to talk to yourself the way you'd talk to someone you love who was hurting.",
+          body2: "You would never tell a grieving friend to hurry up. Extend yourself that same patience.",
+          anchor: "\u201cYou deserve the kindness you'd give someone else.\u201d",
+          prompt: "What would you say to a friend who was having the day you're having right now? Say it to yourself."
+        },
+        {
+          day: 28, tag: "Day Twenty-Eight", title: "Carrying Them Into What's Next",
+          body1: "As you look toward what's ahead — new seasons, new choices, new ordinary days — you don't have to leave them behind to move into any of it.",
+          body2: "You can build a future and still bring them with you. The two are not in competition.",
+          anchor: "\u201cMoving forward is not the same as moving away from them.\u201d",
+          prompt: "What's one hope you have for what comes next, that still has room in it for their memory?"
+        },
+        {
+          day: 29, tag: "Day Twenty-Nine", title: "What You've Learned About Yourself",
+          body1: "Grief, as unwanted as it was, has probably taught you something about your own strength, your own capacity to keep going even on days you weren't sure you could.",
+          body2: "That knowledge doesn't make the loss worth it. But it is something real you get to keep.",
+          anchor: "\u201cYou have survived every hard day so far. All of them.\u201d",
+          prompt: "What have these last weeks shown you about your own resilience that you didn't fully know before?"
+        },
+        {
+          day: 30, tag: "Day Thirty · Grace", title: "May Every Life Be Honored",
+          body1: "Thirty days ago, you began this not because you were ready, but because you needed somewhere to put the weight. You found it — not a cure, but a companion for the process.",
+          body2: "This isn't an ending. Grief doesn't have a graduation day. But you've built something real over these thirty days: proof that you can carry this and keep living, both at once.",
+          anchor: "\u201cMay every life be honored — theirs, and the one you're still living.\u201d",
+          prompt: "As you close this book, what do you want to carry forward from these thirty days?"
+        }
+      ]
+    },
+    permission: {
+      title: "Permission To Heal",
+      totalDays: 30,
+      entries: [
+        {
+          day: 1, tag: "Day One · Self-Assessment", title: "Where Are You, Really?",
+          body1: "Before this book asks you to change anything, it wants to know where you're actually standing — not where you think you should be. Honesty here is the whole foundation of the next ninety days.",
+          body2: "There's no passing or failing this. There's only an accurate starting point, which is the only kind worth having.",
+          anchor: "\u201cYou can't build a path forward from a place you haven't admitted you're in.\u201d",
+          prompt: "On a scale that only you can define, how would you describe where you are today — and why that number?"
+        },
+        {
+          day: 2, tag: "Day Two", title: "Naming What You Actually Need",
+          body1: "Purpose doesn't arrive as a lightning bolt. It shows up first as a need you've been talking yourself out of — something you want that feels too small, too selfish, or too late to ask for.",
+          body2: "Today isn't about finding your purpose. It's about being honest about one need you've been minimizing.",
+          anchor: "\u201cThe thing you keep talking yourself out of is usually the thing worth listening to.\u201d",
+          prompt: "What's one need you've been minimizing lately — and what would it look like to take it seriously?"
+        }
+      ]
+    }
+,
+    "mental-health": {
+      title: "Mental Health Awareness",
+      totalDays: 30,
+      entries: [
+        {
+          day: 1, tag: "Day One", title: "Starting Where You Actually Are",
+          body1: "Mental health isn't a crisis you have or don't have. It's the ongoing, everyday work of how you relate to yourself, your people, and your own mind — and it deserves attention even on the days nothing is technically wrong.",
+          body2: "This book isn't for a diagnosis. It's for the everyday weight of dating, marriage, friendship, and being a person around other people.",
+          anchor: "“You don't need a crisis to deserve care.”",
+          prompt: "Where in your everyday life have you been running on empty without calling it that?"
+        },
+        {
+          day: 2, tag: "Day Two", title: "The Pressure to Be Fine",
+          body1: "Somewhere along the way, 'fine' became the default answer, even when it isn't true. That habit protects other people from your reality, but it also isolates you from the support you actually need.",
+          body2: "You're allowed to answer honestly when someone asks how you are — even if the honest answer is complicated.",
+          anchor: "“Fine is often just a door closing quietly.”",
+          prompt: "When was the last time you said 'I'm fine' when you weren't? What was the truth underneath it?"
+        },
+        {
+          day: 3, tag: "Day Three", title: "Dating and Self-Worth",
+          body1: "Dating has a way of turning your worth into a scoreboard — matches, replies, how someone else responds to you. But your value was never supposed to be measured by another person's attention.",
+          body2: "The right connection won't require you to shrink, chase, or perform. It will let you just be exactly who you already are.",
+          anchor: "“Your worth was decided before anyone ever swiped on it.”",
+          prompt: "Where have you been outsourcing your self-worth to how someone else is treating you?"
+        },
+        {
+          day: 4, tag: "Day Four", title: "Boundaries in New Relationships",
+          body1: "Early on, it's tempting to say yes to everything to avoid seeming difficult. But the boundaries you skip at the start are the ones you'll resent later.",
+          body2: "A boundary stated early isn't a red flag. It's information — and anyone worth keeping will respect it.",
+          anchor: "“What you allow early becomes what you live with later.”",
+          prompt: "What's one boundary you've been avoiding stating clearly with someone new in your life?"
+        },
+        {
+          day: 5, tag: "Day Five", title: "Marriage and Unmet Expectations",
+          body1: "Every marriage carries invisible expectations neither person ever said out loud — about effort, romance, roles, support. Left unspoken, they quietly turn into resentment.",
+          body2: "Naming an expectation out loud, even an awkward one, is kinder to the relationship than letting it fester silently.",
+          anchor: "“Unspoken expectations become the arguments you have about something else.”",
+          prompt: "What's an expectation in your closest relationship that you've never actually said out loud?"
+        },
+        {
+          day: 6, tag: "Day Six", title: "The Myth of the Perfect Partner",
+          body1: "No one is coming to complete you. The idea of a partner who erases all your loneliness and doubt sets every real relationship up to disappoint.",
+          body2: "A good relationship doesn't fix you. It's two whole, imperfect people choosing each other daily anyway.",
+          anchor: "“You are not half a person waiting for your other half.”",
+          prompt: "Where have you been waiting for a relationship to fix something only you can actually work on?"
+        },
+        {
+          day: 7, tag: "Day Seven", title: "Friendship Drift",
+          body1: "Friendships don't usually end in a dramatic fight. More often, they quietly drift — fewer texts, more excuses, until the closeness is just gone. That's a real loss, even without an ending scene.",
+          body2: "You're allowed to grieve a friendship that faded, and you're allowed to try to revive one that still matters to you.",
+          anchor: "“A friendship doesn't need a fight to be worth grieving.”",
+          prompt: "Is there a friendship that's drifted that you'd actually like to reach back toward?"
+        },
+        {
+          day: 8, tag: "Day Eight", title: "Loneliness in a Crowd",
+          body1: "You can be surrounded by people constantly and still feel completely unseen. That kind of loneliness is sneakier, because from the outside your life looks full.",
+          body2: "Being around people isn't the same as being known by them. Both matter, and they're not the same thing.",
+          anchor: "“A full calendar is not the same as connection.”",
+          prompt: "Who in your life actually knows what's really going on with you right now?"
+        },
+        {
+          day: 9, tag: "Day Nine", title: "Comparison via Social Media",
+          body1: "Everyone else's highlight reel is not a fair comparison for your actual, ordinary Tuesday. Comparing your behind-the-scenes to someone else's edited version will always leave you losing.",
+          body2: "Notice what accounts leave you feeling worse about your own life, and give yourself permission to step back from them.",
+          anchor: "“You're comparing your whole story to someone else's one good scene.”",
+          prompt: "What's one account or habit that consistently leaves you feeling worse about yourself?"
+        },
+        {
+          day: 10, tag: "Day Ten", title: "Communicating Needs Instead of Hinting",
+          body1: "Hinting and hoping someone notices is exhausting, and it usually doesn't work. Saying the actual need out loud feels vulnerable, but it's far more likely to get you what you're looking for.",
+          body2: "Try replacing one hint this week with a direct, specific request.",
+          anchor: "“A need spoken clearly has a chance. A need hinted at rarely does.”",
+          prompt: "What's a need you've been hinting at instead of stating directly?"
+        },
+        {
+          day: 11, tag: "Day Eleven", title: "Conflict Isn't the Enemy",
+          body1: "Avoiding all conflict doesn't create peace — it just delays and compounds the disagreement. Healthy relationships aren't conflict-free, they're conflict-capable.",
+          body2: "The goal isn't to never disagree. It's to disagree in a way that leaves the relationship intact afterward.",
+          anchor: "“A relationship that can't hold conflict can't hold much else either.”",
+          prompt: "What's a disagreement you've been avoiding that actually needs to happen?"
+        },
+        {
+          day: 12, tag: "Day Twelve", title: "Rebuilding Trust After Betrayal",
+          body1: "Trust doesn't return the moment someone apologizes. It rebuilds slowly, through consistent, boring, repeated proof over time — not through one grand gesture.",
+          body2: "If you're rebuilding trust with someone, be patient with the pace it actually takes, not the pace you wish it took.",
+          anchor: "“Trust is rebuilt in small repeated moments, not one big one.”",
+          prompt: "What would consistent proof of trustworthiness actually look like to you right now?"
+        },
+        {
+          day: 13, tag: "Day Thirteen", title: "The Weight of People-Pleasing",
+          body1: "Constantly managing everyone else's comfort at your own expense isn't kindness — it's exhaustion wearing a nice outfit. Eventually the bill for that comes due.",
+          body2: "You're allowed to disappoint someone in order to be honest with them. That's not selfish. That's sustainable.",
+          anchor: "“You cannot pour from a cup you're also apologizing for having.”",
+          prompt: "Where have you been prioritizing someone else's comfort over your own honesty?"
+        },
+        {
+          day: 14, tag: "Day Fourteen", title: "Boundaries With Family and In-Laws",
+          body1: "Some of the hardest boundaries are with the people who've known you longest, because they expect the old version of you to still show up.",
+          body2: "You're allowed to change the terms of a relationship, even a long one, when the old terms no longer work for you.",
+          anchor: "“The people who've known you longest don't automatically get unlimited access.”",
+          prompt: "What boundary with family or in-laws have you been avoiding because it feels disloyal?"
+        },
+        {
+          day: 15, tag: "Day Fifteen", title: "Halfway: What's Shifted",
+          body1: "Fifteen days into paying attention to your own patterns is real work, even on the days it felt like nothing happened. Awareness itself is progress, before any behavior even changes.",
+          body2: "Notice what you've started noticing. That's not nothing.",
+          anchor: "“Noticing the pattern is the first place it loses its grip.”",
+          prompt: "What's one pattern in your relationships you're seeing more clearly now than fifteen days ago?"
+        },
+        {
+          day: 16, tag: "Day Sixteen", title: "Attachment Patterns in Dating",
+          body1: "The way you learned to love as a child quietly shapes how you show up in dating now — how you handle distance, closeness, reassurance, silence.",
+          body2: "Understanding your own pattern isn't about excusing it. It's about finally being able to choose differently.",
+          anchor: "“You can't change a pattern you've never named.”",
+          prompt: "What do you tend to do when a new relationship starts to feel uncertain — chase, withdraw, or something else?"
+        },
+        {
+          day: 17, tag: "Day Seventeen", title: "When Friendships Change With Life Stages",
+          body1: "Marriage, kids, moves, new jobs — life stages reshape friendships whether you want them to or not. A friendship changing shape isn't the same as it ending.",
+          body2: "Some friendships need less frequency and more grace to survive a new season.",
+          anchor: "“A friendship can survive distance if it doesn't have to survive resentment too.”",
+          prompt: "Is there a friendship that's just changed shape, not ended, that you've been treating like a loss?"
+        },
+        {
+          day: 18, tag: "Day Eighteen", title: "Vulnerability as Strength",
+          body1: "Staying guarded feels safer, but it also keeps you from ever being truly known. Vulnerability isn't weakness — it's the actual price of real connection.",
+          body2: "Being vulnerable with the right person is not a risk you regret, even when it's uncomfortable in the moment.",
+          anchor: "“No one has ever been truly loved while staying fully hidden.”",
+          prompt: "What's one thing you've been keeping hidden from someone who has actually earned more honesty?"
+        },
+        {
+          day: 19, tag: "Day Nineteen", title: "The Cost of Keeping the Peace",
+          body1: "Constantly swallowing your own opinion to avoid tension doesn't actually create peace — it creates a slow-building resentment with a delayed invoice.",
+          body2: "Real peace includes room for your voice, not just everyone else's comfort.",
+          anchor: "“Peace that requires your silence isn't peace. It's postponement.”",
+          prompt: "Where have you been keeping the peace at the cost of your own honesty?"
+        },
+        {
+          day: 20, tag: "Day Twenty", title: "Repair After a Fight",
+          body1: "How a couple or friendship handles the moments after a fight matters more than whether they fight at all. Repair — a real apology, a real listening — is the actual skill.",
+          body2: "You don't need to win the fight. You need to know how to come back together afterward.",
+          anchor: "“The fight matters less than what happens five minutes after it.”",
+          prompt: "What does a good repair actually look like for you after conflict?"
+        },
+        {
+          day: 21, tag: "Day Twenty-One", title: "Three Weeks: Noticing the Shift",
+          body1: "By now you may be catching yourself mid-pattern — mid-hint, mid-avoidance, mid-people-pleasing — before you finish the old habit. That catch is the actual turning point.",
+          body2: "You don't have to fully change yet. Just noticing sooner counts as real progress.",
+          anchor: "“Catching it halfway through is still catching it.”",
+          prompt: "What old pattern have you caught yourself in the middle of doing this week?"
+        },
+        {
+          day: 22, tag: "Day Twenty-Two", title: "Self-Respect in Relationships",
+          body1: "Self-respect isn't about being unbothered or distant. It's about knowing what you'll tolerate and what you won't, and letting that guide you even when it's inconvenient.",
+          body2: "A relationship that requires you to abandon your own standards isn't one worth keeping at that cost.",
+          anchor: "“Self-respect is just love applied to yourself.”",
+          prompt: "Where has your own standard quietly slipped in a relationship you value?"
+        },
+        {
+          day: 23, tag: "Day Twenty-Three", title: "Recognizing Unhealthy Patterns",
+          body1: "Not every hard relationship is unhealthy, but some patterns — control, constant criticism, walking on eggshells — are worth naming honestly instead of explaining away.",
+          body2: "You're allowed to call a pattern what it actually is, even if it's uncomfortable to say out loud.",
+          anchor: "“A pattern doesn't stop being real just because you've gotten used to it.”",
+          prompt: "Is there a pattern in one of your relationships you've been quietly explaining away?"
+        },
+        {
+          day: 24, tag: "Day Twenty-Four", title: "Rest From Relationship Anxiety",
+          body1: "Constant vigilance about a relationship — reading into every text, replaying every conversation — is exhausting and rarely tells you the truth. Sometimes the most useful thing is simply to rest from the analysis.",
+          body2: "You don't owe every anxious thought your full attention. Some of them just need to be let go of, unanswered.",
+          anchor: "“Not every worry deserves a full investigation.”",
+          prompt: "What relationship anxiety have you been over-analyzing that you could simply set down for today?"
+        },
+        {
+          day: 25, tag: "Day Twenty-Five", title: "Choosing Who Gets Access to You",
+          body1: "Not everyone gets equal access to your time, your vulnerability, or your energy — and that's not coldness, that's discernment.",
+          body2: "You get to decide, on purpose, who earns closeness with you, instead of defaulting to whoever asks the loudest.",
+          anchor: "“Access to you is not a right. It's something earned.”",
+          prompt: "Who currently has more access to your energy than they've actually earned?"
+        },
+        {
+          day: 26, tag: "Day Twenty-Six", title: "Marriage as a Daily Choice",
+          body1: "Long-term commitment isn't one decision made once at the altar — it's a decision remade, quietly, most ordinary days, long after the excitement fades.",
+          body2: "The unglamorous, daily choosing is actually the whole relationship, more than any single big romantic moment.",
+          anchor: "“The wedding day is one day. The choosing is every day after.”",
+          prompt: "What's one small, unglamorous way you could actively choose your partner today?"
+        },
+        {
+          day: 27, tag: "Day Twenty-Seven", title: "Making New Friends as an Adult",
+          body1: "Adult friendship rarely happens by accident the way it did in school. It takes actual initiative — showing up again, following up, being a little braver than feels natural.",
+          body2: "Making a new friend as an adult is awkward for everyone. That awkwardness is not a sign you're doing it wrong.",
+          anchor: "“Every adult friendship started as an awkward first conversation.”",
+          prompt: "What's one small step you could take this week toward a friendship you'd like to have more of?"
+        },
+        {
+          day: 28, tag: "Day Twenty-Eight", title: "Forgiving Without Forgetting",
+          body1: "Forgiveness doesn't require pretending something didn't happen or wasn't painful. It just means you're no longer letting it run the relationship from the shadows.",
+          body2: "You can forgive someone and still remember clearly enough to protect yourself going forward.",
+          anchor: "“Forgiveness releases the grip, not the memory.”",
+          prompt: "Is there something you're ready to forgive without needing to forget the lesson in it?"
+        },
+        {
+          day: 29, tag: "Day Twenty-Nine", title: "Celebrating Healthy Relationships",
+          body1: "It's easy to spend all your attention on the relationships that are struggling and forget to actually notice the ones that are working well.",
+          body2: "Name out loud, to the person, when a relationship is going right. It's easy to only speak up about what's wrong.",
+          anchor: "“The relationships that are working deserve your attention too.”",
+          prompt: "Which relationship in your life is quietly going well — and have you told that person so?"
+        },
+        {
+          day: 30, tag: "Day Thirty", title: "Carrying It Forward",
+          body1: "Thirty days of paying closer attention to how you show up with people won't fix every relationship overnight. But it changes how you notice, and noticing is where every real change begins.",
+          body2: "You don't need to have mastered any of this. You just need to keep noticing, one ordinary interaction at a time.",
+          anchor: "“You don't need to be finished. You just need to keep noticing.”",
+          prompt: "What's one thing from these thirty days you want to keep carrying into your everyday relationships?"
+        }
+      ]
+    },
+    "relationship-grief": {
+      title: "Grief in Relationships",
+      totalDays: 30,
+      entries: [
+        {
+          day: 1, tag: "Day One", title: "The Loss No One Sends Flowers For",
+          body1: "When a relationship ends, there's no funeral, no casserole, no official permission to grieve — just an absence everyone expects you to quietly move past.",
+          body2: "This loss is real, even without a ceremony. You're allowed to grieve it exactly as seriously as any other loss.",
+          anchor: "“An ending without a ritual is still an ending.”",
+          prompt: "What has no one acknowledged about this loss that you wish they had?"
+        },
+        {
+          day: 2, tag: "Day Two", title: "Mourning a Future That Won't Happen",
+          body1: "You're not only grieving the relationship as it was — you're grieving the future you'd already started building in your head: the plans, the version of your life that included them.",
+          body2: "That imagined future was real to you, and losing it is its own kind of loss, separate from losing the person.",
+          anchor: "“You're allowed to grieve a future that never even happened yet.”",
+          prompt: "What future did you imagine that you're now having to let go of?"
+        },
+        {
+          day: 3, tag: "Day Three", title: "Missing Someone Who Hurt You",
+          body1: "It's possible to miss someone and know, clearly, that the relationship wasn't good for you. Those two truths can sit in the same chest at the same time.",
+          body2: "Missing them doesn't mean you were wrong to leave, or that they were right for you.",
+          anchor: "“You can miss a person and still be right to be apart from them.”",
+          prompt: "What specifically do you miss, separate from whether the relationship itself was healthy?"
+        },
+        {
+          day: 4, tag: "Day Four", title: "The Silence After",
+          body1: "The sudden quiet — no more texts, no more updates about their day — can feel louder than the arguments ever did. Silence after connection is its own particular ache.",
+          body2: "You don't have to fill the silence right away. You're allowed to just sit in how strange it feels.",
+          anchor: "“The silence after someone is its own kind of loud.”",
+          prompt: "What does the silence feel like right now, in your own words?"
+        },
+        {
+          day: 5, tag: "Day Five", title: "Rewriting Your Daily Habits",
+          body1: "So much of a relationship lives in small routines — the good morning text, the shared show, the call on the drive home. Losing those tiny rituals can hurt as much as the big things.",
+          body2: "Give yourself time to build new small routines. The old ones don't need to be replaced overnight.",
+          anchor: "“The smallest habits are often what you miss the most.”",
+          prompt: "What small daily ritual with them are you missing most right now?"
+        },
+        {
+          day: 6, tag: "Day Six", title: "Anger at What Was Lost",
+          body1: "Anger — at them, at the situation, at yourself — is a normal part of this, even if it feels at odds with still caring about them.",
+          body2: "You're allowed to be angry about how it ended, or that it ended at all, without that canceling out real love that existed.",
+          anchor: "“Anger and love can occupy the same relationship.”",
+          prompt: "Where is anger showing up in your grief right now, and what is it actually about?"
+        },
+        {
+          day: 7, tag: "Day Seven", title: "Guilt Over Failing",
+          body1: "Whether you ended it or they did, it's common to run through every choice, wondering what you could have done differently to save it.",
+          body2: "Not every relationship is savable, and that isn't the same as you failing at it.",
+          anchor: "“Some endings aren't failures. They're just endings.”",
+          prompt: "What guilt have you been carrying that might actually just be grief in disguise?"
+        },
+        {
+          day: 8, tag: "Day Eight", title: "Comparing to Their Next Relationship",
+          body1: "Watching them move on — a new relationship, a happy post — can feel like proof you were easily replaced. It rarely means what it feels like it means.",
+          body2: "Someone else's timeline for moving on says nothing true about your worth or how much the relationship mattered.",
+          anchor: "“Their next chapter is not a verdict on you.”",
+          prompt: "Have you been comparing your grief timeline to theirs? What would it feel like to stop?"
+        },
+        {
+          day: 9, tag: "Day Nine", title: "Missing the Good Parts Honestly",
+          body1: "It's tempting to either rewrite the whole relationship as terrible, or idealize it as perfect. The truth usually sits somewhere more complicated and more honest than either extreme.",
+          body2: "You're allowed to remember the good moments as genuinely good, even while also being honest about what didn't work.",
+          anchor: "“A relationship can be both real and not right for you.”",
+          prompt: "What's one genuinely good memory you can hold onto without needing to erase it?"
+        },
+        {
+          day: 10, tag: "Day Ten", title: "Friends Who Don't Understand",
+          body1: "Some friends will expect you to be over it faster than you are, especially if the relationship was short or if they didn't see what it meant to you.",
+          body2: "Your grief doesn't need to be validated by anyone else's opinion of how significant the relationship looked from outside.",
+          anchor: "“No one else gets a vote on how much this mattered to you.”",
+          prompt: "Who has made you feel like your grief needed to justify itself? What would it feel like to stop explaining?"
+        },
+        {
+          day: 11, tag: "Day Eleven", title: "The Ghost of Shared Plans",
+          body1: "A trip you'd talked about, a place you were going to move, a future event you'd planned together — these unfinished plans can ambush you unexpectedly.",
+          body2: "When a shared plan comes up, you're allowed to feel the loss of it fully, even if it seems small to anyone else.",
+          anchor: "“Unfinished plans grieve differently than finished memories.”",
+          prompt: "Is there a specific plan or future moment that keeps resurfacing for you?"
+        },
+        {
+          day: 12, tag: "Day Twelve", title: "Social Media and Moving On",
+          body1: "Watching their life continue online — while yours feels frozen — can be its own quiet torment. You're allowed to protect yourself from that, without guilt.",
+          body2: "Muting, unfollowing, or taking a break isn't dramatic. It's a reasonable boundary for an unreasonable amount of daily pain.",
+          anchor: "“You don't owe anyone a front-row seat to your grief's trigger.”",
+          prompt: "Would it help to change how much of their life you're seeing right now?"
+        },
+        {
+          day: 13, tag: "Day Thirteen", title: "Estrangement Grief",
+          body1: "Not every relationship loss is a breakup — sometimes it's a friendship or family bond that quietly ended or was deliberately stepped away from. That grief is just as real, and often less understood.",
+          body2: "If your loss doesn't fit the 'breakup' template, that doesn't make it smaller. It just makes it a different shape.",
+          anchor: "“Grief doesn't require a romantic label to be legitimate.”",
+          prompt: "If your loss isn't a breakup, what would you call it — and has anyone actually asked you about it?"
+        },
+        {
+          day: 14, tag: "Day Fourteen", title: "Two Weeks: What's Changed",
+          body1: "Two weeks in, some days may already feel slightly more bearable, and others may feel like the first day all over again. Both are part of the same honest process.",
+          body2: "You're not required to be 'better' on any particular day. You're only required to keep showing up for yourself.",
+          anchor: "“There's no schedule this is supposed to follow.”",
+          prompt: "What's shifted, even slightly, in these first two weeks — and what hasn't?"
+        },
+        {
+          day: 15, tag: "Day Fifteen", title: "Halfway: Your Own Footing",
+          body1: "Fifteen days of sitting with this loss honestly is real, quiet work, even on the days that felt like standing still.",
+          body2: "Notice one way you've been gentler with yourself since Day One, even a small one.",
+          anchor: "“Standing still while it hurts still counts as showing up.”",
+          prompt: "What's one way you've already been kinder to yourself in this process?"
+        },
+        {
+          day: 16, tag: "Day Sixteen", title: "When You Still Love Them",
+          body1: "Loving someone doesn't switch off the moment a relationship ends. You're allowed to still love them and still know the relationship needed to end.",
+          body2: "Those two truths existing together isn't confusion. It's just how real love and real endings actually work.",
+          anchor: "“Love doesn't obey the timeline of the relationship it was in.”",
+          prompt: "What would it feel like to let yourself still love them without needing that to mean you should go back?"
+        },
+        {
+          day: 17, tag: "Day Seventeen", title: "Setting Boundaries With Mutual Friends",
+          body1: "Shared friend groups can turn grief into an ongoing negotiation — who gets invited where, what gets mentioned, whose side people quietly take.",
+          body2: "You're allowed to ask for what you need from mutual friends, even if it complicates the group.",
+          anchor: "“You can ask for space without asking anyone to choose sides.”",
+          prompt: "Is there a boundary you need to set with a mutual friend that you've been avoiding?"
+        },
+        {
+          day: 18, tag: "Day Eighteen", title: "Grieving the Relationship You Wanted",
+          body1: "Sometimes what hurts most isn't losing the relationship you had, but losing the one you hoped it would eventually become.",
+          body2: "You're allowed to grieve the potential you saw, separately from grieving what actually existed.",
+          anchor: "“You can grieve a promise, even one that was never quite kept.”",
+          prompt: "What did you hope this relationship would eventually become?"
+        },
+        {
+          day: 19, tag: "Day Nineteen", title: "The Temptation to Reach Out",
+          body1: "Late at night, the urge to send one more text can feel almost unbearable. That urge isn't weakness — it's just how much this mattered to you.",
+          body2: "You're allowed to want to reach out and still choose not to, for your own sake.",
+          anchor: "“Wanting to isn't the same as needing to.”",
+          prompt: "What do you actually want them to know, that reaching out might not actually give you?"
+        },
+        {
+          day: 20, tag: "Day Twenty", title: "Learning Who You Are Alone Again",
+          body1: "After a significant relationship, parts of your identity that were tangled up with them need to be quietly relearned on your own terms.",
+          body2: "This isn't starting from nothing. It's remembering things about yourself the relationship simply crowded out.",
+          anchor: "“You're not building a new self. You're uncovering the one that was always there.”",
+          prompt: "What's something about yourself you're rediscovering now that you have more room for it?"
+        },
+        {
+          day: 21, tag: "Day Twenty-One", title: "Three Weeks: Noticing Shifts",
+          body1: "Three weeks in, you may notice a song or memory landing a little softer than it did on Day One. That's not you forgetting. That's you healing.",
+          body2: "A softer landing isn't a betrayal of how much it mattered. It's just what recovery quietly looks like.",
+          anchor: "“Softer doesn't mean it mattered less.”",
+          prompt: "What's landed a little softer this week than it did three weeks ago?"
+        },
+        {
+          day: 22, tag: "Day Twenty-Two", title: "Forgiving Yourself",
+          body1: "Whatever role you think you played in how things ended, you're allowed to release the harshest version of that story and offer yourself the same grace you'd offer a friend.",
+          body2: "You made the best choices you could with the information and capacity you had at the time.",
+          anchor: "“You did not fail at love. You lived it, and it ended.”",
+          prompt: "What would it look like to forgive yourself for whatever you think you got wrong?"
+        },
+        {
+          day: 23, tag: "Day Twenty-Three", title: "The Love That Taught You Something",
+          body1: "Even relationships that end teach you something real — about what you need, what you won't tolerate again, what you're actually looking for.",
+          body2: "You're allowed to be grateful for the lesson without needing to be grateful for the pain that delivered it.",
+          anchor: "“A relationship can end and still have been worth something.”",
+          prompt: "What has this relationship taught you about what you actually need going forward?"
+        },
+        {
+          day: 24, tag: "Day Twenty-Four", title: "Rebuilding Your Sense of Self",
+          body1: "Somewhere in a long relationship, your interests, opinions, and rhythms can quietly start bending toward someone else's. Getting them back is a real, deliberate project.",
+          body2: "Pick one small thing that was always yours before them, and let yourself return to it now.",
+          anchor: "“You get to have your own shape again.”",
+          prompt: "What's one interest or habit that was fully yours before this relationship, that you'd like back?"
+        },
+        {
+          day: 25, tag: "Day Twenty-Five", title: "Grace for Their Flaws and Yours",
+          body1: "You don't have to villainize them to justify your grief, and you don't have to villainize yourself to explain the ending. Two flawed people can simply not have worked.",
+          body2: "Holding grace for both of you doesn't undo the pain. It just makes the story more honest.",
+          anchor: "“Two good people can still be wrong for each other.”",
+          prompt: "Where have you been flattening either of you into a villain to make sense of the ending?"
+        },
+        {
+          day: 26, tag: "Day Twenty-Six", title: "Trusting Again Someday",
+          body1: "Right now, the idea of opening up to someone new might feel impossible. That feeling is real, and it's also not permanent.",
+          body2: "You don't have to trust anyone new today. You just have to leave the door open for someday.",
+          anchor: "“Readiness will come back, even if it's not here yet.”",
+          prompt: "What would it take for you to feel even slightly more open to trust again someday?"
+        },
+        {
+          day: 27, tag: "Day Twenty-Seven", title: "What You'll Carry Forward",
+          body1: "Not every part of this relationship needs to be left behind. Some of what you built together — how to communicate, what real partnership can feel like — is yours to keep.",
+          body2: "Notice what's actually worth carrying forward, separate from the parts you're right to release.",
+          anchor: "“You get to keep the parts that made you better.”",
+          prompt: "What's one thing from this relationship you actually want to carry forward into whatever comes next?"
+        },
+        {
+          day: 28, tag: "Day Twenty-Eight", title: "Reclaiming Shared Places and Songs",
+          body1: "A restaurant, a song, a neighborhood — things that once belonged to both of you can slowly become yours again, on your own terms, when you're ready.",
+          body2: "You don't have to avoid these things forever. You're allowed to take them back, one at a time.",
+          anchor: "“A place doesn't have to stay theirs forever.”",
+          prompt: "Is there a place or song you'd like to slowly reclaim as your own again?"
+        },
+        {
+          day: 29, tag: "Day Twenty-Nine", title: "Hope Without Rushing",
+          body1: "Hope for what's next doesn't have to mean rushing toward it. You can believe good things are still ahead without needing them to arrive on any particular timeline.",
+          body2: "Let hope exist quietly in the background, without pressuring yourself to act on it before you're ready.",
+          anchor: "“Hope doesn't need a deadline to be real.”",
+          prompt: "What does a small, unhurried hope for your future look like right now?"
+        },
+        {
+          day: 30, tag: "Day Thirty", title: "Love That Ended Is Still Love",
+          body1: "This relationship ending doesn't erase that it was real, or that it mattered, or that you loved and were loved inside it, even imperfectly.",
+          body2: "Thirty days in, you haven't arrived at some finish line called 'over it.' You've simply built the strength to keep carrying it forward, differently than before.",
+          anchor: "“An ending does not undo that it was real.”",
+          prompt: "As you close this book, what do you want to remember about this love, now that the hardest part is behind you?"
+        }
+      ]
+    },
+    "family-grief": {
+      title: "Grief in Family",
+      totalDays: 30,
+      entries: [
+        {
+          day: 1, tag: "Day One", title: "The Complicated Kind of Loss",
+          body1: "Family loss rarely comes with simple feelings. Love, resentment, relief, and grief can all show up in the same hour, and none of them cancel the others out.",
+          body2: "You don't need your feelings about this loss to be simple in order for them to be valid.",
+          anchor: "“Complicated grief is still grief.”",
+          prompt: "What complicated feelings are sitting alongside your grief right now?"
+        },
+        {
+          day: 2, tag: "Day Two", title: "When Grief and Relief Coexist",
+          body1: "If the relationship was difficult, or their suffering has ended, relief can show up right next to grief — and that combination often comes with guilt attached.",
+          body2: "Relief doesn't mean you didn't love them. It means the whole truth of the relationship is finally allowed to surface.",
+          anchor: "“Relief is not a betrayal of grief.”",
+          prompt: "Is there relief mixed into your grief that you haven't let yourself acknowledge?"
+        },
+        {
+          day: 3, tag: "Day Three", title: "Loving Someone Who Hurt You",
+          body1: "Family loss can mean grieving someone who also caused you real pain. You're allowed to hold both the loss and the harm, without needing to resolve them into one tidy feeling.",
+          body2: "You don't have to forgive everything to be allowed to grieve. And you don't have to grieve everything to be allowed to have loved them.",
+          anchor: "“You can grieve someone and still be honest about what they did.”",
+          prompt: "What would it look like to hold both your grief and your honesty about the harm, at the same time?"
+        },
+        {
+          day: 4, tag: "Day Four", title: "The Family That Won't Talk About It",
+          body1: "Some families process loss through silence — no conversations about feelings, just logistics and moving forward. That silence can leave you grieving alone inside a full house.",
+          body2: "You're allowed to find support outside your family if your family isn't able to give you what you need right now.",
+          anchor: "“Silence is a family's way of coping too, even when it isn't yours.”",
+          prompt: "Where could you find the conversation about this loss that your family isn't able to have?"
+        },
+        {
+          day: 5, tag: "Day Five", title: "Missing a Parent Who Wasn't Perfect",
+          body1: "Grieving an imperfect parent means grieving both who they were and who you needed them to be — and sometimes that second loss is heavier than the first.",
+          body2: "Both griefs are real. You're allowed to mourn the actual parent and the parent you wished for, separately.",
+          anchor: "“You can grieve the parent you had and the one you didn't.”",
+          prompt: "What are you grieving about who they actually were, versus who you wished they'd been?"
+        },
+        {
+          day: 6, tag: "Day Six", title: "Sibling Loss and Shifting Roles",
+          body1: "Losing a sibling doesn't just mean losing them — it can mean the whole shape of your family shifts, roles reassign, and you're suddenly the older one, or the only one.",
+          body2: "You're allowed to grieve the role you've lost, not just the person.",
+          anchor: "“A sibling's absence reshapes the whole family, not just one relationship.”",
+          prompt: "How has the shape of your family changed with this loss, beyond just missing them?"
+        },
+        {
+          day: 7, tag: "Day Seven", title: "Estrangement as Its Own Grief",
+          body1: "When a family member is still alive but the relationship is gone — through estrangement, distance, or a choice you made to protect yourself — that's still a real loss to mourn.",
+          body2: "You're allowed to grieve someone who is still living. Absence doesn't require death to be real.",
+          anchor: "“You can grieve someone who is still breathing.”",
+          prompt: "If you're grieving an estrangement, what specifically are you mourning — the person, the relationship, or the family you wished you had?"
+        },
+        {
+          day: 8, tag: "Day Eight", title: "Holidays With an Empty Chair",
+          body1: "Holidays have a way of making an absence unmissable — the table looks different, the traditions feel hollow in a new way each year.",
+          body2: "You're allowed to change a tradition rather than force yourself through it exactly as it was.",
+          anchor: "“A tradition can change and still honor what it used to mean.”",
+          prompt: "Is there a holiday tradition you'd like to change this year, rather than force through unchanged?"
+        },
+        {
+          day: 9, tag: "Day Nine", title: "Family Expectations After Loss",
+          body1: "Families often expect certain roles after a loss — who plans the funeral, who checks on everyone else, who's supposed to 'be strong.' Those expectations can crowd out your actual grief.",
+          body2: "You're allowed to step back from a role you didn't choose, even temporarily, to actually grieve.",
+          anchor: "“Someone assigning you a role doesn't obligate you to play it forever.”",
+          prompt: "What role has your family expected of you since this loss, and is it one you actually want?"
+        },
+        {
+          day: 10, tag: "Day Ten", title: "Being the One Who Holds It Together",
+          body1: "If you've become the person everyone else leans on, your own grief can get quietly pushed to the back of the line, sometimes for years.",
+          body2: "You're allowed to need holding too, even if you're usually the one who does the holding.",
+          anchor: "“The strong one still needs somewhere to set the weight down.”",
+          prompt: "Who is holding you right now, while you hold everyone else?"
+        },
+        {
+          day: 11, tag: "Day Eleven", title: "Grieving the Family You Wish You Had",
+          body1: "Sometimes the loss brings into focus not just the person who's gone, but the family you always wished you had and didn't.",
+          body2: "That grief is allowed too — for the version of family life that never quite existed.",
+          anchor: "“You can grieve a family that was never fully there.”",
+          prompt: "What version of family did you wish you had, that this loss has made you more aware of missing?"
+        },
+        {
+          day: 12, tag: "Day Twelve", title: "When Relatives Grieve Differently Than You",
+          body1: "One relative wants to talk about it constantly; another won't mention it at all. Neither is wrong, but the mismatch can feel like a second loss on top of the first.",
+          body2: "You don't need your family to grieve the way you do in order for your own grief to be valid.",
+          anchor: "“Different grief styles in the same family doesn't mean anyone's doing it wrong.”",
+          prompt: "Whose grieving style is hardest for you to understand right now, and what might be underneath it for them?"
+        },
+        {
+          day: 13, tag: "Day Thirteen", title: "The Inheritance of Unspoken Things",
+          body1: "Families often pass down more than possessions — patterns, silences, ways of avoiding hard feelings. A loss can bring all of that quietly to the surface.",
+          body2: "Noticing an inherited pattern is the first step toward deciding whether you want to keep carrying it.",
+          anchor: "“Some inheritances are patterns, not possessions.”",
+          prompt: "What unspoken pattern has this loss made you more aware of in your family?"
+        },
+        {
+          day: 14, tag: "Day Fourteen", title: "Two Weeks In: What's Surfaced",
+          body1: "Two weeks into sitting with this loss, old feelings — from childhood, from years ago — may be surfacing alongside the current grief. That's normal for family loss specifically.",
+          body2: "Old grief and new grief are allowed to show up together. You don't have to sort them into separate piles.",
+          anchor: "“Family loss often reopens older rooms too.”",
+          prompt: "What older feeling has resurfaced alongside this current loss?"
+        },
+        {
+          day: 15, tag: "Day Fifteen", title: "Halfway: Giving Yourself Permission",
+          body1: "Fifteen days of sitting honestly with complicated family grief is real, quiet work — even when it doesn't look like progress from the outside.",
+          body2: "Give yourself permission to still be figuring this out, without a deadline.",
+          anchor: "“You're allowed to still be working through this.”",
+          prompt: "What permission do you need to give yourself right now that you haven't yet?"
+        },
+        {
+          day: 16, tag: "Day Sixteen", title: "Loving Complicated People Fully",
+          body1: "People are rarely all good or all difficult. You're allowed to hold the full, complicated truth of who they were, without needing to simplify it into one story.",
+          body2: "A fuller memory, complicated as it is, honors them more than a flattened one.",
+          anchor: "“The whole truth is a better memorial than the simple version.”",
+          prompt: "What's a complicated, full memory of them you haven't let yourself sit with yet?"
+        },
+        {
+          day: 17, tag: "Day Seventeen", title: "Setting Boundaries With Grieving Relatives",
+          body1: "Grief can make people say sharp things, lean too hard, or expect too much from you. You're allowed to set boundaries with grieving relatives, even gently.",
+          body2: "Protecting your own capacity isn't unkind, even during a family-wide loss.",
+          anchor: "“Grief doesn't give anyone unlimited access to you.”",
+          prompt: "Is there a boundary with a grieving relative you need to set, even gently?"
+        },
+        {
+          day: 18, tag: "Day Eighteen", title: "When Old Wounds Resurface",
+          body1: "A loss can reopen old family wounds — favoritism, old arguments, things never fully resolved. You don't have to solve decades of history in the middle of fresh grief.",
+          body2: "You're allowed to set the old wound aside for now, and come back to it later, if at all.",
+          anchor: "“You don't have to fix everything while you're still grieving something new.”",
+          prompt: "What old wound has resurfaced that you're choosing to set aside for now?"
+        },
+        {
+          day: 19, tag: "Day Nineteen", title: "The Child Role You Still Play",
+          body1: "Even as an adult, family gatherings can pull you back into the role you had as a child — the peacemaker, the invisible one, the responsible one.",
+          body2: "You're allowed to notice that old role activating, and choose, on purpose, to respond differently now.",
+          anchor: "“You don't have to play the role you were assigned at eight years old.”",
+          prompt: "What old family role tends to activate when you're with them, and does it still serve you?"
+        },
+        {
+          day: 20, tag: "Day Twenty", title: "Forgiving a Parent or Sibling",
+          body1: "Forgiveness here isn't about excusing what happened. It's about deciding you no longer want the relationship's old weight to keep shaping your present.",
+          body2: "You can forgive at your own pace, or not at all, and either choice is allowed to be right for you.",
+          anchor: "“Forgiveness is for the weight you're carrying, not a verdict on what they did.”",
+          prompt: "Is there something you're ready to set down, whether or not you'd call it forgiveness?"
+        },
+        {
+          day: 21, tag: "Day Twenty-One", title: "Three Weeks: What's Changed",
+          body1: "Three weeks in, notice what's shifted in how you're carrying this — even small things, like a memory that no longer stops you in your tracks the way it did.",
+          body2: "Small shifts are real, even in something as layered as family grief.",
+          anchor: "“A small shift is still a real one.”",
+          prompt: "What's shifted, even slightly, in how you're carrying this over the past three weeks?"
+        },
+        {
+          day: 22, tag: "Day Twenty-Two", title: "Family Patterns You're Choosing to End",
+          body1: "Some family patterns — silence, avoidance, certain kinds of criticism — don't have to continue with you. You get to choose which parts of the inheritance you keep.",
+          body2: "Ending a pattern isn't a rejection of your family. It's a choice about the family you're building next.",
+          anchor: "“You get to decide which patterns stop with you.”",
+          prompt: "What family pattern are you choosing not to pass forward?"
+        },
+        {
+          day: 23, tag: "Day Twenty-Three", title: "Honoring What Was Good",
+          body1: "Even inside a complicated relationship, there was likely something genuinely good — a phrase, a skill, a way of showing up that you can honor without needing the whole relationship to have been simple.",
+          body2: "Pick one good thing to actively carry forward, on purpose.",
+          anchor: "“You can honor the good without pretending the rest wasn't real too.”",
+          prompt: "What's one genuinely good thing from this relationship you want to actively carry forward?"
+        },
+        {
+          day: 24, tag: "Day Twenty-Four", title: "Grief and Duty",
+          body1: "Funerals, estate matters, caretaking — practical duties often crowd out the space to actually feel the loss. The logistics are real, but they're not the whole of your grief.",
+          body2: "Once the practical duties are handled, give yourself room to actually grieve, not just manage.",
+          anchor: "“Managing the logistics isn't the same as grieving the loss.”",
+          prompt: "Have the practical duties of this loss left you room to actually grieve yet?"
+        },
+        {
+          day: 25, tag: "Day Twenty-Five", title: "Becoming the Older Generation",
+          body1: "With certain family losses, you quietly become the next generation up — the one who remembers, the one who holds the family history now.",
+          body2: "That shift can feel heavy and also like an honor, both true at once.",
+          anchor: "“Someone has to carry the family's memory forward. It's you now.”",
+          prompt: "How does it feel to notice yourself becoming the older generation in your family?"
+        },
+        {
+          day: 26, tag: "Day Twenty-Six", title: "What You Inherited That You Keep",
+          body1: "Not everything passed down needs to be released. Some traits, values, or habits from this person are worth actively keeping and passing on yourself.",
+          body2: "Name what you want to keep, on purpose, so it doesn't just fade with time.",
+          anchor: "“Some inheritances are worth protecting.”",
+          prompt: "What trait or value from them do you want to actively keep alive?"
+        },
+        {
+          day: 27, tag: "Day Twenty-Seven", title: "What You Inherited That You Release",
+          body1: "Alongside what's worth keeping, some inherited patterns, wounds, or expectations are worth setting down for good.",
+          body2: "Releasing an inheritance isn't disrespect. It's deciding what actually belongs in the next chapter.",
+          anchor: "“You don't have to keep everything that was handed to you.”",
+          prompt: "What's something inherited from this relationship you're ready to finally set down?"
+        },
+        {
+          day: 28, tag: "Day Twenty-Eight", title: "Family as It Is Now, Not Was",
+          body1: "The family you have now looks different than it did before this loss — different roles, different gatherings, maybe different people at the table.",
+          body2: "You're allowed to build a relationship with your family as it actually is now, instead of grieving the version that no longer exists.",
+          anchor: "“The family you have now deserves its own relationship, not just comparison to before.”",
+          prompt: "What does your family actually look like now, and how are you relating to that reality?"
+        },
+        {
+          day: 29, tag: "Day Twenty-Nine", title: "Building New Family Rituals",
+          body1: "New rituals — a different holiday tradition, a new way of remembering them — can hold space for the loss while still moving your family forward.",
+          body2: "A new ritual doesn't erase the old ones. It just makes room for what's true now.",
+          anchor: "“A new tradition can still make space for who's missing.”",
+          prompt: "What's one new ritual your family could build to hold space for this loss going forward?"
+        },
+        {
+          day: 30, tag: "Day Thirty", title: "Family Is Not One Story",
+          body1: "No family loss fits into a single, tidy narrative. Yours is allowed to be complicated, unresolved in places, and still worth carrying forward with care.",
+          body2: "Thirty days in, you haven't finished grieving — family grief rarely finishes. But you've built real tools for carrying it, complicated as it is.",
+          anchor: "“Family is never just one story. Yours doesn't have to be either.”",
+          prompt: "As you close this book, what do you want to remember about how you've carried this, complicated as it's been?"
+        }
+      ]
+    }
+  };
+
+function showView(name){
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-"+name).classList.add("active");
+  if(name==="home") renderHome();
+  if(name==="checkin") { renderCheckin(); }
+}
+
+// ---------- HOME ----------
+const booksMeta = [
+  { id:"grief", title:"Grief To Grace", meta:"30 days · encouragement", desc:"Finding the light in every loss.", cover:"grief", totalDays:30, ready:true },
+  { id:"permission", title:"Permission To Heal", meta:"30 days · self-assessment", desc:"Understanding your mental health and purpose.", cover:"permission", totalDays:30, ready:true, hasAssessment:true },
+  { id:"mental-health", title:"Mental Health Awareness", meta:"30 days · everyday life", desc:"Dating, marriage, friendships — everyday mental health.", cover:"mental", totalDays:30, ready:true },
+  { id:"relationship-grief", title:"Grief in Relationships", meta:"30 days · encouragement", desc:"For the loss of a relationship.", cover:"relgrief", totalDays:30, ready:true },
+  { id:"family-grief", title:"Grief in Family", meta:"30 days · encouragement", desc:"For loss within the family system.", cover:"famgrief", totalDays:30, ready:true }
+];
+
+function currentDay(id, total){ const r = localStorage.getItem(`dana-scott:${id}:currentDay`); return r ? Math.min(parseInt(r,10), total) : 1; }
+
+function renderHome(){
+  const bookShelf = document.getElementById("bookShelf");
+  bookShelf.innerHTML = "";
+  booksMeta.forEach(b => {
+    const day = currentDay(b.id, b.totalDays);
+    const pct = Math.round((day/b.totalDays)*100);
+    const assessmentDone = b.hasAssessment && localStorage.getItem(`dana-scott:${b.id}:assessment`);
+    const el = document.createElement("div");
+    el.className = "book-card" + (b.ready ? "" : " disabled");
+    el.innerHTML = `
+      <div class="cover ${b.cover}">${!b.ready ? '<div class="soon-tag">Coming soon</div>' : ""}<div class="cover-title">${b.title}</div></div>
+      <div class="card-body">
+        <div class="card-meta">${b.meta}</div><p class="card-desc">${b.desc}</p>
+        ${b.ready ? `<div class="progress-row"><span>Day ${day} of ${b.totalDays}</span><span>${pct}%</span></div><div class="track"><div class="fill" style="width:${pct}%"></div></div>
+        ${day>1 ? `<div class="reset-link" onclick="event.stopPropagation(); if(confirm('Start ${b.title} over?')){ localStorage.removeItem('dana-scott:${b.id}:currentDay'); renderHome(); }">Start over</div>`:""}` : ""}
+      </div>`;
+    if(b.ready){
+      el.onclick = () => {
+        if(b.hasAssessment && !assessmentDone){ openAssessment(); }
+        else { openBook(b.id); }
+      };
+    }
+    bookShelf.appendChild(el);
+  });
+
+  const journalShelf = document.getElementById("journalShelf");
+  journalShelf.innerHTML = "";
+  booksMeta.forEach((b) => {
+    const el = document.createElement("div");
+    el.className = "journal-card" + (b.ready ? "" : " disabled");
+    el.innerHTML = `
+      <div class="journal-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 2.5h12a1 1 0 0 1 1 1V21l-7-4.5L5 21V3.5a1 1 0 0 1 1-1z" fill="#F7EFE4"/>
+          <circle cx="12" cy="8" r="1.4" fill="#4A2E73"/>
+        </svg>
+      </div>
+      <div><div class="jtitle">${b.title}</div><div class="jmeta">${b.ready ? "Journal" : "Coming soon"}</div></div>`;
+    if(b.ready) el.onclick = () => openBook(b.id);
+    journalShelf.appendChild(el);
+  });
+}
+
+// ---------- BOOK ----------
+let currentBookId = "grief", bookIdx = 0;
+function openBook(id, day){
+  currentBookId = id;
+  const book = LIBRARY[id];
+  const requested = day || parseInt(localStorage.getItem(`dana-scott:${id}:currentDay`)||"1",10);
+  const found = book.entries.findIndex(e => e.day === requested);
+  bookIdx = found >= 0 ? found : 0;
+  showView("book");
+  renderBookPage();
+}
+function renderBookPage(){
+  const book = LIBRARY[currentBookId];
+  const e = book.entries[bookIdx];
+  document.getElementById("bookTitle").textContent = book.title;
+  document.getElementById("dayLabel").textContent = `Day ${e.day} of ${book.totalDays}`;
+  document.getElementById("journeyFill").style.width = `${(e.day/book.totalDays)*100}%`;
+  document.getElementById("dayTag").textContent = e.tag;
+  document.getElementById("entryTitle").textContent = e.title;
+  document.getElementById("entryBody1").textContent = e.body1;
+  document.getElementById("entryBody2").textContent = e.body2;
+  document.getElementById("anchorLine").textContent = e.anchor;
+  document.getElementById("prompt").textContent = e.prompt;
+  const jkey = `dana-scott:${currentBookId}:journal:${e.day}`;
+  document.getElementById("journalText").value = localStorage.getItem(jkey) || "";
+  document.getElementById("pageCount").textContent = `Day ${e.day}`;
+  document.getElementById("prevBtn").disabled = bookIdx===0;
+  document.getElementById("nextBtn").disabled = bookIdx===book.entries.length-1;
+  localStorage.setItem(`dana-scott:${currentBookId}:currentDay`, String(e.day));
+}
+document.getElementById("journalText").addEventListener("input", (ev) => {
+  const book = LIBRARY[currentBookId]; const e = book.entries[bookIdx];
+  localStorage.setItem(`dana-scott:${currentBookId}:journal:${e.day}`, ev.target.value);
+});
+document.getElementById("prevBtn").onclick = () => { if(bookIdx>0){ bookIdx--; renderBookPage(); } };
+document.getElementById("nextBtn").onclick = () => { const book=LIBRARY[currentBookId]; if(bookIdx<book.entries.length-1){ bookIdx++; renderBookPage(); } };
+
+// ---------- ASSESSMENT ----------
+const QUESTIONS = [
+  { cat:"Emotional Awareness", text:"I can usually name what I'm feeling, even when it's uncomfortable." },
+  { cat:"Emotional Awareness", text:"I understand what tends to trigger my hardest emotional moments." },
+  { cat:"Emotional Awareness", text:"I let myself feel difficult emotions instead of pushing them away." },
+  { cat:"Coping Patterns", text:"When I'm overwhelmed, I have healthy ways of working through it." },
+  { cat:"Coping Patterns", text:"I don't rely on avoidance to get through hard days." },
+  { cat:"Coping Patterns", text:"I recover from setbacks without it derailing me for long." },
+  { cat:"Support System", text:"There is at least one person I can be fully honest with." },
+  { cat:"Support System", text:"I ask for help when I need it, rather than handling everything alone." },
+  { cat:"Support System", text:"I feel genuinely supported by the people closest to me." },
+  { cat:"Sense of Purpose", text:"I have a clear sense of what matters to me right now." },
+  { cat:"Sense of Purpose", text:"I feel like my daily life is moving toward something." },
+  { cat:"Sense of Purpose", text:"I can imagine a version of my life I'm excited about." }
+];
+let aAnswers = new Array(QUESTIONS.length).fill(null), aI = 0;
+function openAssessment(){
+  aAnswers = new Array(QUESTIONS.length).fill(null); aI = 0;
+  document.getElementById("a-quiz").style.display = "block";
+  document.getElementById("a-result").style.display = "none";
+  showView("assessment"); renderA();
+}
+function renderA(){
+  const q = QUESTIONS[aI];
+  document.getElementById("a-progress").textContent = `Question ${aI+1} of ${QUESTIONS.length}`;
+  document.getElementById("a-fillbar").style.width = `${(aI/QUESTIONS.length)*100}%`;
+  document.getElementById("a-cat").textContent = q.cat;
+  document.getElementById("a-q").textContent = q.text;
+  const scale = document.getElementById("a-scale"); scale.innerHTML = "";
+  for(let v=1; v<=5; v++){
+    const b = document.createElement("button");
+    b.textContent = v; if(aAnswers[aI]===v) b.classList.add("sel");
+    b.onclick = () => { aAnswers[aI]=v; renderA(); };
+    scale.appendChild(b);
+  }
+  document.getElementById("a-back").disabled = aI===0;
+  document.getElementById("a-next").disabled = aAnswers[aI]===null;
+  document.getElementById("a-next").textContent = aI===QUESTIONS.length-1 ? "See my result" : "Next";
+}
+document.getElementById("a-back").onclick = () => { if(aI>0){ aI--; renderA(); } };
+document.getElementById("a-next").onclick = () => {
+  if(aAnswers[aI]===null) return;
+  if(aI<QUESTIONS.length-1){ aI++; renderA(); } else { showAResult(); }
+};
+function showAResult(){
+  const total = aAnswers.reduce((a,b)=>a+b,0);
+  let title, body, detail, startDay;
+  if(total<=28){ title="Just Beginning"; body="A lot feels unsteady right now — and that's an accurate, honest map of where you're standing."; detail="Starting you on Day 1, with the foundational work."; startDay=1; }
+  else if(total<=44){ title="In Progress"; body="You've got real footing in some areas and real gaps in others. You're not starting from zero."; detail="Starting you on Day 2."; startDay=2; }
+  else { title="Steady Ground"; body="You're carrying more strength into this than you might give yourself credit for."; detail="Starting from Day 1 — worth reading in order even from steadier ground."; startDay=1; }
+  document.getElementById("a-band").textContent = title;
+  document.getElementById("a-body").textContent = body;
+  document.getElementById("a-detail").textContent = detail;
+  localStorage.setItem("dana-scott:permission:assessment", JSON.stringify({total, startDay}));
+  document.getElementById("a-quiz").style.display = "none";
+  document.getElementById("a-result").style.display = "block";
+  document.getElementById("a-begin").onclick = () => openBook("permission", startDay);
+}
+
+// ---------- CHECKIN ----------
+const MOODS = [{v:1,e:"😞",l:"Heavy"},{v:2,e:"😔",l:"Low"},{v:3,e:"😐",l:"Steady"},{v:4,e:"🙂",l:"Okay"},{v:5,e:"😊",l:"Good"}];
+const MOOD_COLOR = {1:"#8A5A9A",2:"#6B5FA8",3:"#4C7FE0",4:"#7BA8D6",5:"#E8B93A"};
+let ciDay = 1, ciMood = null;
+function renderCheckin(){
+  ciDay = parseInt(localStorage.getItem("dana-scott:checkin:currentDay")||"1",10);
+  const raw = localStorage.getItem(`dana-scott:checkin:${ciDay}`);
+  const data = raw ? JSON.parse(raw) : null;
+  ciMood = data ? data.mood : null;
+  document.getElementById("ciDay").textContent = `Day ${ciDay} of 30`;
+  document.getElementById("ciNote").value = data ? data.note : "";
+  const row = document.getElementById("moodRow"); row.innerHTML = "";
+  MOODS.forEach(m => {
+    const b = document.createElement("button");
+    b.className = "mood-btn" + (ciMood===m.v ? " sel" : "");
+    b.innerHTML = m.e;
+    b.onclick = () => { ciMood = m.v; renderCheckin(); };
+    row.appendChild(b);
+  });
+  const grid = document.getElementById("ciGrid"); grid.innerHTML = "";
+  for(let d=1; d<=30; d++){
+    const r = localStorage.getItem(`dana-scott:checkin:${d}`);
+    const cell = document.createElement("div"); cell.className = "ci-cell"; cell.textContent = d;
+    if(r){ const dd = JSON.parse(r); cell.style.background = MOOD_COLOR[dd.mood]; cell.style.color = "#1E1440"; }
+    grid.appendChild(cell);
+  }
+}
+document.getElementById("ciSave").onclick = () => {
+  localStorage.setItem(`dana-scott:checkin:${ciDay}`, JSON.stringify({mood:ciMood, note:document.getElementById("ciNote").value}));
+  localStorage.setItem("dana-scott:checkin:currentDay", String(Math.min(ciDay+1,30)));
+  renderCheckin();
+};
+
+renderHome();
+</script>
+</body>
+</html
